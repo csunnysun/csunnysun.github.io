@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>香水轮盘 · 今天穿什么香</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family:-apple-system,"PingFang SC",sans-serif; background:radial-gradient(1200px 800px at 50% -10%, #1b2542, #0a0e1a 62%) fixed, #0a0e1a; color:#e8e2d8; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px 16px 60px; }
+body::before { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.55;
+  background:
+    radial-gradient(1.5px 1.5px at 12% 22%, rgba(255,246,224,.9), transparent 100%),
+    radial-gradient(1px 1px at 78% 12%, rgba(255,255,255,.7), transparent 100%),
+    radial-gradient(1px 1px at 88% 46%, rgba(214,186,130,.8), transparent 100%),
+    radial-gradient(1.5px 1.5px at 30% 78%, rgba(255,255,255,.5), transparent 100%),
+    radial-gradient(1px 1px at 64% 68%, rgba(255,246,224,.6), transparent 100%),
+    radial-gradient(1px 1px at 42% 8%, rgba(255,255,255,.55), transparent 100%),
+    radial-gradient(1.2px 1.2px at 6% 58%, rgba(214,186,130,.6), transparent 100%),
+    radial-gradient(1px 1px at 94% 84%, rgba(255,255,255,.45), transparent 100%); }
+h1 { font-family:"Songti SC","Noto Serif SC",serif; font-size:22px; font-weight:700; letter-spacing:6px; margin-bottom:4px; background:linear-gradient(135deg,#f3e2b3,#d4a94e 45%,#f7ecc9 70%,#c99a3f); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 2px 18px rgba(212,169,78,.18); }
+.sub { font-size:12px; color:#93a0bd; letter-spacing:3px; margin-bottom:18px; }
+.filters { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:22px; max-width:420px; }
+.chip { padding:6px 14px; border-radius:999px; border:1px solid rgba(216,184,120,.28); background:rgba(22,29,50,.45); backdrop-filter:blur(8px); color:#cbbf9f; font-size:13px; cursor:pointer; transition:all .2s; }
+.chip:hover { border-color:rgba(216,184,120,.55); color:#ecdfbb; }
+.chip.on { background:linear-gradient(135deg,#f0dcab,#d4a94e 60%,#c1903a); color:#1c1408; border-color:transparent; font-weight:600; box-shadow:0 2px 12px rgba(212,169,78,.35); }
+.wheel-wrap { position:relative; width:min(320px,86vw); height:min(320px,86vw); margin-bottom:24px; }
+.wheel { width:100%; height:100%; border-radius:50%; position:relative; transition:transform 4s cubic-bezier(.15,.9,.25,1); background:#10151f; overflow:hidden;
+  box-shadow:0 0 0 3px #c9a25e, 0 0 0 5px #3a2c14, 0 0 0 6px rgba(240,220,171,.35), 0 14px 44px rgba(0,0,0,.65), 0 0 70px rgba(212,169,78,.16); }
+.wheel::after { content:""; position:absolute; inset:0; border-radius:50%; pointer-events:none; z-index:3;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255,252,240,.16), transparent 42%),
+    radial-gradient(circle at 50% 50%, transparent 58%, rgba(4,7,15,.42) 100%); }
+.seg { position:absolute; inset:0; }
+.lbl { position:absolute; inset:0; pointer-events:none; }
+.lbl span { position:absolute; top:12px; left:50%; transform:translateX(-50%); width:15px; font-size:11px; line-height:1.3; text-align:center; word-break:break-all; text-shadow:0 1px 2px rgba(0,0,0,.55); }
+.sep-lines { position:absolute; inset:0; border-radius:50%; pointer-events:none; z-index:2; }
+.pointer { position:absolute; top:-13px; left:50%; transform:translateX(-50%); width:26px; height:32px; z-index:5;
+  background:linear-gradient(180deg,#f7ecc9,#d4a94e 55%,#a5762a);
+  clip-path:polygon(50% 100%, 6% 0, 94% 0);
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.6)); }
+.hub { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:78px; height:78px; border-radius:50%; z-index:4; display:flex; align-items:center; justify-content:center; font-size:26px;
+  background:radial-gradient(circle at 34% 28%, #42507a, #141b30 70%);
+  border:3px solid transparent;
+  box-shadow:0 0 0 2px #d8b878, 0 0 0 1px rgba(247,236,201,.5) inset, 0 6px 18px rgba(0,0,0,.7), inset 0 -8px 16px rgba(0,0,0,.5), inset 0 4px 10px rgba(255,255,255,.08); }
+.spin-btn { padding:14px 52px; border-radius:999px; background:linear-gradient(135deg,#f0dcab,#d4a94e 55%,#b9882f); color:#1c1408; font-size:17px; font-weight:700; border:none; cursor:pointer; letter-spacing:4px; box-shadow:0 6px 24px rgba(212,169,78,.35), inset 0 1px 0 rgba(255,255,255,.55), inset 0 -2px 6px rgba(120,80,20,.35); transition:transform .15s, box-shadow .2s; }
+.spin-btn:hover { box-shadow:0 8px 30px rgba(212,169,78,.5), inset 0 1px 0 rgba(255,255,255,.55), inset 0 -2px 6px rgba(120,80,20,.35); }
+.spin-btn:active { transform:scale(.95); }
+.spin-btn:disabled { opacity:.45; }
+.result { margin-top:26px; width:min(420px,92vw); background:rgba(21,28,48,.55); backdrop-filter:blur(14px); border:1px solid rgba(216,184,120,.28); border-radius:18px; padding:22px 20px; display:none; box-shadow:0 12px 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06); }
+.result.show { display:block; animation:pop .4s ease; }
+@keyframes pop { from { opacity:0; transform:translateY(12px);} to { opacity:1; transform:none;} }
+.r-name { font-family:"Songti SC","Noto Serif SC",serif; font-size:22px; font-weight:700; margin-bottom:2px; color:#f3ead3; }
+.r-brand { font-size:13px; color:#93a0bd; margin-bottom:12px; letter-spacing:1px; }
+.r-tier { display:inline-block; padding:3px 12px; border-radius:6px; font-size:12px; font-weight:600; margin-bottom:12px; }
+.t-S { background:linear-gradient(135deg,#f0dcab,#d4a94e); color:#1c1408; box-shadow:0 2px 10px rgba(212,169,78,.4); }
+.t-A { background:linear-gradient(135deg,#4d7a63,#33584a); color:#eaf4ee; }
+.t-B { background:linear-gradient(135deg,#5f7fa6,#41597e); color:#eef3fa; }
+.t-C { background:#4a4a52; color:#ddd; }
+.r-desc { font-size:14px; line-height:1.7; color:#d6cfbe; }
+.r-tags { margin-top:12px; display:flex; flex-wrap:wrap; gap:6px; }
+.r-tag { font-size:11px; padding:3px 10px; border-radius:999px; border:1px solid rgba(216,184,120,.25); color:#b3a67e; background:rgba(216,184,120,.06); }
+.foot { margin-top:28px; font-size:11px; color:#5f6880; text-align:center; line-height:1.8; }
+.upd { font-size:10px; color:#8a7a52; letter-spacing:1.5px; }
+</style>
+</head>
+<body>
+<h1>香 水 轮 盘</h1>
+<p class="sub">转一转 · 今天穿什么香</p>
+<div class="filters" id="filters"></div>
+<div class="wheel-wrap">
+  <div class="pointer"></div>
+  <div class="wheel" id="wheel"></div>
+  <div class="hub">🧴</div>
+</div>
+<button class="spin-btn" id="spin" onclick="spin()">开 转</button>
+<div class="result" id="result"></div>
+<p class="foot">小雪雪的私人香水库 · 风花雪月部技术支持<br>点击筛选标签后转轮盘，结果越转越懂你<br><span class="upd">· 更新于 2026-11-17 ·</span></p>
+<script>
+var P = [
+{name:"希腊无花果",brand:"蒂普提克",tier:"S",desc:"🏆官方认证阿饼香。前调绿意江晏／中调椰奶曲奇／尾调雪松190骨。本命，无需多言。",tags:["奶系","绿意","本命","四季"]},
+{name:"龙与玫瑰",brand:"解放橘郡",tier:"A",desc:"金属血玫，官方传说『龙女即巨龙』——暗黑甜妹最终形态。",tags:["玫瑰","暗黑","攻击性","约会"]},
+{name:"科西嘉柑橘",brand:"阿蒂仙",tier:"A",desc:"焦糖蜜饯柑橘，阿尔卑斯橙子奶糖，秋冬向。",tags:["美食","柑橘","秋冬","甜"]},
+{name:"鼠尾草与海盐",brand:"祖玛珑",tier:"A",desc:"男友香本香，盐系清冷挂，青岛人自带海景。",tags:["盐系","清冷","男友香","夏天"]},
+{name:"冥府之路",brand:"阿蒂仙",tier:"B",desc:"地狱焚香百合。名字越黑，内心越软。中样续杯区。",tags:["宗教","焚香","暗黑","秋冬"]},
+{name:"花宫娜檀香",brand:"花宫娜",tier:"A",desc:"檀道平替认证：前调神似＋果香更柔。格拉斯的醇厚。",tags:["木质","檀香","平替","秋冬"]},
+{name:"北国雪松",brand:"蔻依",tier:"A",desc:"木质线老将·安全牌。冷感木质自带空调属性。",tags:["木质","清冷","通勤","四季"]},
+{name:"暖棉",brand:"Clean",tier:"A",desc:"赠品反杀全场。碧浪洗衣粉味的干净织物调。",tags:["皂感","干净","通勤","夏天"]},
+{name:"壁炉火光",brand:"马吉拉",tier:"B",desc:"试纸=杏仁点心铺，上皮=烧焦木头。喷围巾解锁甜点模式。",tags:["美食","木质","冬天","喷织物"]},
+{name:"香子兰木",brand:"芦丹氏",tier:"B",desc:"焦糖味烤饼干，神似壁炉火光——甜点线新员（11-17·5ml中样）。撞衫不可怕，谁贵谁尴尬。",tags:["美食","甜点","冬天","暖"]},
+{name:"抹茶26",brand:"Le Labo",tier:"B",desc:"续杯区铁律成员：喜欢但不值大瓶，4ml续杯到天荒地老。",tags:["美食","抹茶","续杯","日常"]},
+{name:"熄灯礼拜",brand:"阿蒂仙",tier:"B",desc:"水生开场→冥府之路带甜版。宗教线观察员。",tags:["宗教","水生","暗黑","秋冬"]},
+{name:"Bois Corsé",brand:"蒂普提克",tier:"A",desc:"实名『醇厚之木』。柔和木质＋墨水调，藏书阁的味道。",tags:["木质","墨水","麝香","秋冬"]},
+{name:"嫣红檀香",brand:"汤姆福特",tier:"待",desc:"檀香甜润挂，雪松紫罗兰案的『正主』。",tags:["木质","檀香","贵","秋冬"]},
+{name:"修道院玫瑰",brand:"SMN",tier:"待",desc:"圣物收藏室新成员，修道院的玫瑰。",tags:["玫瑰","宗教","麝香","约会"]},
+{name:"黄金麝香",brand:"SMN",tier:"待",desc:"修道院麝香，和修道院玫瑰是姊妹篇。",tags:["麝香","宗教","干净","日常"]},
+{name:"超级雪松",brand:"拜瑞朵",tier:"待",desc:"木质线新血：玫瑰底雪松。",tags:["木质","清冷","玫瑰","通勤"]},
+{name:"加州桂",brand:"帕尔马之水",tier:"待",desc:"桃金娘加州桂，地中海网红款正面对决。",tags:["绿意","海洋","夏天","清新"]},
+{name:"阿玛菲无花果",brand:"帕尔马之水",tier:"待",desc:"无花果擂台赛挑战者（正宫Philosykos守擂中）。",tags:["绿意","奶系","无花果","夏天"]},
+{name:"卡普里岛橙",brand:"帕尔马之水",tier:"待",desc:"橙子汽水本水。",tags:["柑橘","清新","夏天","通勤"]},
+{name:"烟雨茉莉",brand:"蔻依",tier:"待",desc:"名字已经赢了。",tags:["花香","茉莉","白花香","约会"]},
+{name:"木兰诗语",brand:"蔻依",tier:"待",desc:"北国雪松的同门师妹。",tags:["花香","木兰","通勤","日常"]},
+{name:"肌肤之花",brand:"蒂普提克",tier:"待",desc:"麝香玫瑰三巨头之三，伪体香挂。",tags:["麝香","玫瑰","约会","贴肤"]},
+{name:"for her",brand:"纳西素",tier:"待",desc:"麝香玫瑰三巨头之二，门面款。",tags:["麝香","玫瑰","约会","斩人"]},
+{name:"红毒",brand:"迪奥",tier:"待",desc:"杏仁奶油炸弹，美食调祖师奶。",tags:["美食","奶系","秋冬","甜"]},
+{name:"墨恋",brand:"莱俪",tier:"待",desc:"黑墨水本墨，木质线的书房担当。",tags:["木质","墨水","清冷","通勤"]},
+{name:"孤女",brand:"芦丹氏",tier:"待",desc:"芦丹氏三姐妹·焚香冷感。",tags:["焚香","清冷","暗黑","秋冬"]},
+{name:"修女",brand:"芦丹氏",tier:"待",desc:"茉莉焚香，宗教暗黑系。",tags:["宗教","茉莉","暗黑","约会"]},
+{name:"八月夜桂花",brand:"芦丹氏",tier:"待",desc:"🏅年度秋日仪式香，每年十月固定上岗。",tags:["桂花","花香","秋天","仪式"]},
+{name:"白芷香",brand:"娇兰",tier:"待",desc:"香草绿意系，娇兰家的经典骨架。",tags:["绿意","香草","通勤","四季"]},
+{name:"慵懒周末",brand:"马吉拉",tier:"待",desc:"白麝香＋亚麻感，被窝随行版。",tags:["皂感","麝香","通勤","四季"]}
+];
+var FILTERS = ["全部","奶系","木质","麝香","玫瑰","宗教","美食","清冷","墨水","暗黑","秋冬","夏天","约会","通勤","本命"];
+var cur = "全部";
+var wheel = document.getElementById("wheel");
+var fl = document.getElementById("filters");
+FILTERS.forEach(function(f){
+  var b = document.createElement("button");
+  b.className = "chip" + (f==="全部"?" on":"");
+  b.textContent = f;
+  b.onclick = function(){
+    cur = f;
+    fl.querySelectorAll(".chip").forEach(function(c){c.classList.remove("on");});
+    b.classList.add("on");
+    buildWheel();
+  };
+  fl.appendChild(b);
+});
+function pool(){ return cur==="全部" ? P : P.filter(function(p){ return p.tags.indexOf(cur)>=0; }); }
+var lastAng = 0;
+/* 深空蓝×香槟金配色：明暗两套交替，相邻扇区必有明度差。每色 = [外缘色, 近心色, 标签文字色] */
+var PALETTE = [
+  ["#e8cd9c","#b8935a","#3a2b12"],  // 香槟金(亮)
+  ["#3b4f7d","#1f2c4e","#e8ecf5"],  // 深空蓝(暗)
+  ["#e0b3ab","#b27b6f","#3c1f1a"],  // 玫瑰金(亮)
+  ["#37604f","#1c362c","#e2efe8"],  // 墨绿(暗)
+  ["#b9cde0","#7f9bb8","#1d2a3a"],  // 雾蓝(亮)
+  ["#5d4a78","#372a4c","#ece4f5"],  // 暗夜紫(暗)
+  ["#c3d3b4","#8ba276","#26301c"],  // 鼠尾草(亮)
+  ["#6f5334","#453120","#f0e2cc"]   // 深棕(暗)
+];
+/* 由扇区角度精确计算楔形 clip-path（修掉旧版固定90°三角导致的大小不一） */
+function bpt(deg){
+  var r = deg*Math.PI/180, dx = Math.sin(r), dy = -Math.cos(r);
+  var m = Math.max(Math.abs(dx), Math.abs(dy)) || 1;
+  var s = 0.5/m;
+  return (50+dx*s*100).toFixed(2)+"% "+(50+dy*s*100).toFixed(2)+"%";
+}
+function wedgePoly(step){
+  var pts = ["50% 50%", bpt(0)];
+  for (var a=45; a<step; a+=45) pts.push(bpt(a));
+  if (step>0) pts.push(bpt(Math.min(step,360)));
+  return "polygon("+pts.join(",")+")";
+}
+function buildWheel(){
+  var items = pool();
+  wheel.innerHTML = "";
+  var n = items.length, step = 360/n;
+  var poly = wedgePoly(step);
+  var lineCol = "rgba(6,9,18,.95)";
+  var g = Math.max(0.3, Math.min(0.9, step*0.045)); // 分割线半宽（度）
+  var stops = [], cursor = 0;
+  for (var i=0;i<n;i++){
+    var c = PALETTE[i%PALETTE.length];
+    var s = document.createElement("div");
+    s.className = "seg";
+    s.style.transform = "rotate("+(i*step)+"deg)";
+    s.style.clipPath = poly;
+    s.style.background = "linear-gradient(180deg, "+c[0]+" 0%, "+c[1]+" 62%)";
+    wheel.appendChild(s);
+    var lb = document.createElement("div");
+    lb.className = "lbl";
+    lb.style.transform = "rotate("+(n>1 ? i*step+step/2 : 0)+"deg)";
+    var nm = document.createElement("span");
+    nm.style.color = c[2];
+    nm.textContent = items[i].name.length>6 ? items[i].name.slice(0,5)+"…" : items[i].name;
+    lb.appendChild(nm);
+    wheel.appendChild(lb);
+    /* 收集分割线位置（独立于扇区的叠层，保证每格边界一样清晰） */
+    var a0 = Math.max(0, i*step-g), a1 = Math.min(360, i*step+g);
+    if (a0 > cursor) stops.push("transparent "+cursor.toFixed(2)+"deg "+a0.toFixed(2)+"deg");
+    stops.push(lineCol+" "+a0.toFixed(2)+"deg "+a1.toFixed(2)+"deg");
+    cursor = a1;
+  }
+  var e0 = Math.max(cursor, 360-g);
+  if (e0 > cursor) stops.push("transparent "+cursor.toFixed(2)+"deg "+e0.toFixed(2)+"deg");
+  stops.push(lineCol+" "+e0.toFixed(2)+"deg 360deg");
+  var sep = document.createElement("div");
+  sep.className = "sep-lines";
+  sep.style.background = "conic-gradient("+stops.join(",")+")";
+  wheel.appendChild(sep);
+  wheel.style.transform = "rotate(0deg)";
+  lastAng = 0;
+}
+buildWheel();
+function spin(){
+  var items = pool();
+  if(!items.length) return;
+  var btn = document.getElementById("spin");
+  btn.disabled = true;
+  document.getElementById("result").classList.remove("show");
+  var idx = Math.floor(Math.random()*items.length);
+  var n = items.length, step = 360/n;
+  var target = idx*step + step/2;
+  var ang = lastAng + 360*5 + (360 - target - (lastAng % 360));
+  lastAng = ang;
+  wheel.style.transform = "rotate("+ang+"deg)";
+  setTimeout(function(){
+    var p = items[idx];
+    var res = document.getElementById("result");
+    var tierClass = p.tier==="S"?"t-S":p.tier==="A"?"t-A":p.tier==="B"?"t-B":"t-C";
+    var tierName = p.tier==="S"?"🏆S级":p.tier==="A"?"💎A级":p.tier==="B"?"🍵B级":p.tier==="C"?"🚫C级":"🕐待评级";
+    res.innerHTML = '<div class="r-name">'+p.name+'</div>'
+      + '<div class="r-brand">'+p.brand+'</div>'
+      + '<span class="r-tier '+tierClass+'">'+tierName+'</span>'
+      + '<div class="r-desc">'+p.desc+'</div>'
+      + '<div class="r-tags">'+p.tags.map(function(t){return '<span class="r-tag">'+t+'</span>';}).join("")+'</div>';
+    res.classList.add("show");
+    btn.disabled = false;
+  }, 4100);
+}
+</script>
+</body>
+</html>
